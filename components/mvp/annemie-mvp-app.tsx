@@ -424,9 +424,9 @@ function AnnemieMvpAppContent() {
         {/* Start */}
         {state.hydrated && state.phase === "start" && (
           <div className="flex flex-col items-center gap-8 animate-slide-up">
-            <div className="flex w-full justify-end">
+            {/* <div className="flex w-full justify-end">
               <LocaleSwitcher />
-            </div>
+            </div> */}
 
             <div className="flex flex-col items-center gap-2 pt-1">
               <div className="flex h-20 w-20 items-center justify-center rounded-full bg-primary clay-sm">
@@ -489,17 +489,20 @@ function AnnemieMvpAppContent() {
                   {formatDateTime(locale, recentSession.finishedAt)}
                 </p>
                 <div className="mt-2 flex items-center justify-center gap-1">
-                  {Array.from({ length: recentSession.totalTasks }, (_, index) => (
-                    <Star
-                      key={index}
-                      className={cn(
-                        "h-5 w-5",
-                        index < recentSession.correct
-                          ? "fill-game-star text-game-star"
-                          : "fill-muted/30 text-border",
-                      )}
-                    />
-                  ))}
+                  {Array.from(
+                    { length: recentSession.totalTasks },
+                    (_, index) => (
+                      <Star
+                        key={index}
+                        className={cn(
+                          "h-5 w-5",
+                          index < recentSession.correct
+                            ? "fill-game-star text-game-star"
+                            : "fill-muted/30 text-border",
+                        )}
+                      />
+                    ),
+                  )}
                 </div>
               </div>
             )}
@@ -636,7 +639,8 @@ function AnnemieMvpAppContent() {
                     {row.label}
                   </p>
                   <p className="font-display text-2xl font-extrabold text-primary">
-                    {formatNumber(locale, row.correct)}/{formatNumber(locale, row.total)}
+                    {formatNumber(locale, row.correct)}/
+                    {formatNumber(locale, row.total)}
                   </p>
                 </div>
               ))}
