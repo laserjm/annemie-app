@@ -1,3 +1,4 @@
+import { useLocale } from "@/components/i18n/locale-provider";
 import { NumberChoices } from "@/components/tasks/NumberChoices";
 import type { BackToTenSubtractTask as BackToTenSubtractTaskType } from "@/lib/domain/task";
 import { ArrowDown } from "lucide-react";
@@ -13,6 +14,7 @@ export function BackToTenSubtractTask({
   onAnswer,
   disabled = false,
 }: BackToTenSubtractTaskProps) {
+  const { t } = useLocale();
   const options =
     task.interaction.mode === "singleChoice" ? task.interaction.options : [];
   const leftover = task.stimulus.subtract - task.stimulus.bridgeStep;
@@ -20,7 +22,7 @@ export function BackToTenSubtractTask({
   return (
     <div className="flex flex-col items-center gap-6">
       <p className="font-display text-2xl font-bold text-foreground">
-        {task.prompt || "Subtract through 10!"}
+        {task.prompt || t("task.bridgeSubtract.prompt")}
       </p>
 
       <div className="clay bg-white/60 p-6">

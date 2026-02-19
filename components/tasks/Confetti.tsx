@@ -50,10 +50,20 @@ export function Confetti({ trigger }: ConfettiProps) {
   }, [showKey]);
 
   useEffect(() => {
+    let timer: number | null = null;
+
     if (trigger && !prevTrigger.current) {
-      setShowKey((k) => k + 1);
+      timer = window.setTimeout(() => {
+        setShowKey((k) => k + 1);
+      }, 0);
     }
     prevTrigger.current = trigger;
+
+    return () => {
+      if (timer !== null) {
+        window.clearTimeout(timer);
+      }
+    };
   }, [trigger]);
 
   useEffect(() => {

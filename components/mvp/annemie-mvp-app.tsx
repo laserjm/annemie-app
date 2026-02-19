@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useReducer, useRef, useState } from "react";
 
+import { LocaleProvider, useLocale } from "@/components/i18n/locale-provider";
 import { Confetti } from "@/components/tasks/Confetti";
 import { FeedbackOverlay } from "@/components/tasks/FeedbackOverlay";
 import { HintPanel } from "@/components/tasks/HintPanel";
@@ -13,6 +14,8 @@ import {
   type SessionResult,
 } from "@/lib/domain/session";
 import type { Skill, Task } from "@/lib/domain/task";
+import { formatDateTime, formatNumber } from "@/lib/i18n/format";
+import type { MessageKey, MessageParams } from "@/lib/i18n/types";
 import {
   appendSessionResult,
   loadProgress,
@@ -151,10 +154,10 @@ const appReducer = (state: AppState, action: AppAction): AppState => {
   }
 };
 
-const SKILL_LABELS: Record<Skill, string> = {
-  quantity: "Count Dots",
-  makeTen: "Make Ten",
-  bridgeSubtract: "Subtract",
+const SKILL_LABEL_KEYS: Record<Skill, MessageKey> = {
+  quantity: "skill.quantity",
+  makeTen: "skill.makeTen",
+  bridgeSubtract: "skill.bridgeSubtract",
 };
 
 const SKILL_ICONS: Record<Skill, string> = {
@@ -178,17 +181,55 @@ const percentage = (numerator: number, denominator: number): number => {
   return Math.round((numerator / denominator) * 100);
 };
 
-const encouragementFor = (result: SessionResult): string => {
+type TranslateFn = (key: MessageKey, params?: MessageParams) => string;
+
+const encouragementFor = (result: SessionResult, t: TranslateFn): string => {
   const totalPct = percentage(result.correct, result.totalTasks);
 
-  if (totalPct === 100) return "Perfect score! You're a math superstar!";
-  if (totalPct >= 80) return "Amazing! You're getting really good at this!";
-  if (totalPct >= 60)
-    return "Nice work! Keep practising and you'll be even better!";
-  return "Great try! Every practice makes you stronger!";
+  if (totalPct === 100) return t("result.encouragement.perfect");
+  if (totalPct >= 80) return t("result.encouragement.great");
+  if (totalPct >= 60) return t("result.encouragement.good");
+  return t("result.encouragement.try");
 };
 
-export function AnnemieMvpApp() {
+function LocaleSwitcher() {
+  const { locale, setLocale, t } = useLocale();
+
+  return (
+    <div className="clay-sm inline-flex items-center gap-1 bg-white/70 p-1">
+      <span className="px-2 font-display text-xs font-bold text-foreground/70">
+        {t("locale.label")}
+      </span>
+      <button
+        type="button"
+        className={cn(
+          "rounded-xl px-3 py-1.5 font-display text-sm font-bold transition-colors",
+          locale === "de"
+            ? "bg-primary text-white"
+            : "bg-transparent text-foreground/70 hover:bg-muted",
+        )}
+        onClick={() => setLocale("de")}
+      >
+        {t("locale.de")}
+      </button>
+      <button
+        type="button"
+        className={cn(
+          "rounded-xl px-3 py-1.5 font-display text-sm font-bold transition-colors",
+          locale === "en"
+            ? "bg-primary text-white"
+            : "bg-transparent text-foreground/70 hover:bg-muted",
+        )}
+        onClick={() => setLocale("en")}
+      >
+        {t("locale.en")}
+      </button>
+    </div>
+  );
+}
+
+function AnnemieMvpAppContent() {
+  const { locale, t } = useLocale();
   const [state, dispatch] = useReducer(appReducer, initialState);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
@@ -216,21 +257,31 @@ export function AnnemieMvpApp() {
   const recentSession = state.persisted.sessionHistory[0] ?? null;
 
   const skillButtons: Array<{
-    label: string;
+    labelKey: MessageKey;
     value: Skill | null;
     icon: string;
     colorKey: Skill | "balanced";
   }> = [
-    { label: "Mix it up!", value: null, icon: "🎲", colorKey: "balanced" },
     {
-      label: "Count Dots",
+      labelKey: "skill.balanced",
+      value: null,
+      icon: "🎲",
+      colorKey: "balanced",
+    },
+    {
+      labelKey: "skill.quantity",
       value: "quantity",
       icon: "👀",
       colorKey: "quantity",
     },
-    { label: "Make Ten", value: "makeTen", icon: "🧩", colorKey: "makeTen" },
     {
-      label: "Subtract",
+      labelKey: "skill.makeTen",
+      value: "makeTen",
+      icon: "🧩",
+      colorKey: "makeTen",
+    },
+    {
+      labelKey: "skill.bridgeSubtract",
       value: "bridgeSubtract",
       icon: "✂️",
       colorKey: "bridgeSubtract",
@@ -249,7 +300,7 @@ export function AnnemieMvpApp() {
       focusSkill: state.selectedFocusSkill,
     });
 
-    engine.start({ length: 5 });
+    engine.start({ length: 5, locale });
 
     engineRef.current = engine;
 
@@ -298,10 +349,15 @@ export function AnnemieMvpApp() {
     }
 
     const feedback: FeedbackState = submission.isCorrect
-      ? { kind: "correct", message: "Correct!" }
+      ? { kind: "correct", message: t("feedback.correct.1") }
       : {
           kind: "incorrect",
-          message: `The answer was ${state.currentTask.answer.correct}.`,
+          message: t("feedback.answerWas", {
+            answer:
+              typeof state.currentTask.answer.correct === "number"
+                ? formatNumber(locale, state.currentTask.answer.correct)
+                : String(state.currentTask.answer.correct),
+          }),
         };
 
     if (submission.nextTaskReady) {
@@ -341,14 +397,14 @@ export function AnnemieMvpApp() {
 
       return {
         skill,
-        label: SKILL_LABELS[skill],
+        label: t(SKILL_LABEL_KEYS[skill]),
         icon: SKILL_ICONS[skill],
         correct: stats.correct,
         total: stats.total,
         score: percentage(stats.correct, stats.total),
       };
     });
-  }, [state.result]);
+  }, [state.result, t]);
 
   return (
     <main className="game-bg flex min-h-dvh flex-col items-center px-4 py-6 sm:px-8 sm:py-8">
@@ -356,35 +412,37 @@ export function AnnemieMvpApp() {
       <FeedbackOverlay kind={feedbackKind} answer={feedbackAnswer} />
 
       <div className="w-full max-w-2xl">
-        {/* ─── Loading ─── */}
+        {/* Loading */}
         {!state.hydrated && (
           <div className="flex min-h-[60dvh] items-center justify-center">
             <div className="animate-float font-display text-4xl font-bold text-primary">
-              Annemie
+              {t("app.name")}
             </div>
           </div>
         )}
 
-        {/* ─── START SCREEN ─── */}
+        {/* Start */}
         {state.hydrated && state.phase === "start" && (
           <div className="flex flex-col items-center gap-8 animate-slide-up">
-            {/* Logo / Title */}
-            <div className="flex flex-col items-center gap-2 pt-4">
+            <div className="flex w-full justify-end">
+              <LocaleSwitcher />
+            </div>
+
+            <div className="flex flex-col items-center gap-2 pt-1">
               <div className="flex h-20 w-20 items-center justify-center rounded-full bg-primary clay-sm">
                 <Zap className="h-10 w-10 text-white" strokeWidth={2.5} />
               </div>
               <h1 className="font-display text-5xl font-extrabold text-primary">
-                Annemie
+                {t("app.name")}
               </h1>
               <p className="font-display text-xl font-semibold text-muted-foreground">
-                Let&apos;s do some math!
+                {t("app.tagline")}
               </p>
             </div>
 
-            {/* Skill picker */}
             <div className="w-full space-y-3">
               <p className="text-center font-display text-lg font-bold text-foreground/70">
-                What do you want to practise?
+                {t("start.practiceQuestion")}
               </p>
               <div className="grid grid-cols-2 gap-4">
                 {skillButtons.map((option) => {
@@ -392,7 +450,7 @@ export function AnnemieMvpApp() {
 
                   return (
                     <button
-                      key={option.label}
+                      key={option.labelKey}
                       type="button"
                       className={cn(
                         "clay-button flex min-h-20 flex-col items-center justify-center gap-1 px-4 py-3 transition-all",
@@ -408,7 +466,7 @@ export function AnnemieMvpApp() {
                         {option.icon}
                       </span>
                       <span className="font-display text-lg font-bold">
-                        {option.label}
+                        {t(option.labelKey)}
                       </span>
                     </button>
                   );
@@ -416,23 +474,27 @@ export function AnnemieMvpApp() {
               </div>
             </div>
 
-            {/* Last session summary (kid-friendly) */}
             {recentSession && (
               <div className="clay-sm w-full bg-white/70 p-4 text-center">
                 <p className="font-display text-base font-bold text-foreground/70">
-                  Last time
+                  {t("start.lastTime")}
                 </p>
                 <p className="font-display text-2xl font-extrabold text-primary">
-                  {recentSession.correct} out of {recentSession.totalTasks}{" "}
-                  right!
+                  {t("start.lastScore", {
+                    correct: formatNumber(locale, recentSession.correct),
+                    total: formatNumber(locale, recentSession.totalTasks),
+                  })}
                 </p>
-                <div className="mt-1 flex items-center justify-center gap-1">
-                  {Array.from({ length: recentSession.totalTasks }, (_, i) => (
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {formatDateTime(locale, recentSession.finishedAt)}
+                </p>
+                <div className="mt-2 flex items-center justify-center gap-1">
+                  {Array.from({ length: recentSession.totalTasks }, (_, index) => (
                     <Star
-                      key={i}
+                      key={index}
                       className={cn(
                         "h-5 w-5",
-                        i < recentSession.correct
+                        index < recentSession.correct
                           ? "fill-game-star text-game-star"
                           : "fill-muted/30 text-border",
                       )}
@@ -442,7 +504,6 @@ export function AnnemieMvpApp() {
               </div>
             )}
 
-            {/* Start button */}
             <button
               type="button"
               className="clay-button flex min-h-18 w-full max-w-sm items-center justify-center gap-3 bg-game-success px-8 py-4"
@@ -454,16 +515,15 @@ export function AnnemieMvpApp() {
                 strokeWidth={0}
               />
               <span className="font-display text-2xl font-extrabold text-white">
-                Let&apos;s Go!
+                {t("start.go")}
               </span>
             </button>
           </div>
         )}
 
-        {/* ─── SESSION SCREEN ─── */}
+        {/* Session */}
         {state.hydrated && state.phase === "session" && state.currentTask && (
           <div className="flex flex-col items-center gap-5 animate-slide-up">
-            {/* Top bar: skill badge + progress stars */}
             <div className="flex w-full items-center justify-between">
               <div
                 className={cn(
@@ -475,7 +535,7 @@ export function AnnemieMvpApp() {
                   {SKILL_ICONS[state.currentTask.skill]}
                 </span>
                 <span className="font-display text-sm font-bold">
-                  {SKILL_LABELS[state.currentTask.skill]}
+                  {t(SKILL_LABEL_KEYS[state.currentTask.skill])}
                 </span>
               </div>
 
@@ -486,7 +546,6 @@ export function AnnemieMvpApp() {
               />
             </div>
 
-            {/* Task */}
             <div className="w-full">
               <TaskRenderer
                 key={state.currentTask.id}
@@ -496,13 +555,11 @@ export function AnnemieMvpApp() {
               />
             </div>
 
-            {/* Hint area */}
             <HintPanel
               hintLevel={state.hint.level}
               hintMessage={state.hint.message}
             />
 
-            {/* Hint button */}
             <button
               type="button"
               className={cn(
@@ -517,53 +574,55 @@ export function AnnemieMvpApp() {
               <Lightbulb className="h-5 w-5" strokeWidth={2.5} />
               <span className="font-display text-lg font-bold">
                 {state.hint.level === 0
-                  ? "Need a hint?"
+                  ? t("session.hint.button.0")
                   : state.hint.level === 1
-                    ? "One more hint?"
-                    : "No more hints"}
+                    ? t("session.hint.button.1")
+                    : t("session.hint.button.2")}
               </span>
             </button>
           </div>
         )}
 
-        {/* ─── RESULT SCREEN ─── */}
+        {/* Result */}
         {state.hydrated && state.phase === "result" && state.result && (
           <div className="flex flex-col items-center gap-6 animate-slide-up">
-            {/* Trophy */}
-            <div className="flex flex-col items-center gap-3 pt-4">
+            <div className="flex w-full justify-end">
+              <LocaleSwitcher />
+            </div>
+
+            <div className="flex flex-col items-center gap-3 pt-2">
               <div className="flex h-24 w-24 items-center justify-center rounded-full bg-game-star clay animate-tada">
                 <Trophy className="h-12 w-12 text-amber-800" strokeWidth={2} />
               </div>
               <h2 className="font-display text-4xl font-extrabold text-foreground">
-                Well done!
+                {t("result.title")}
               </h2>
               <p className="text-center font-display text-xl font-semibold text-muted-foreground">
-                {encouragementFor(state.result)}
+                {encouragementFor(state.result, t)}
               </p>
             </div>
 
-            {/* Big score */}
             <div className="clay bg-white/80 px-10 py-6 text-center">
               <p className="font-display text-6xl font-extrabold text-primary">
-                {state.result.correct}/{state.result.totalTasks}
+                {formatNumber(locale, state.result.correct)}/
+                {formatNumber(locale, state.result.totalTasks)}
               </p>
               <div className="mt-2 flex items-center justify-center gap-1">
-                {Array.from({ length: state.result.totalTasks }, (_, i) => (
+                {Array.from({ length: state.result.totalTasks }, (_, index) => (
                   <Star
-                    key={i}
+                    key={index}
                     className={cn(
                       "h-8 w-8",
-                      i < state.result!.correct
+                      index < state.result!.correct
                         ? "fill-game-star text-game-star animate-star-fill"
                         : "fill-muted/30 text-border",
                     )}
-                    style={{ animationDelay: `${i * 100}ms` }}
+                    style={{ animationDelay: `${index * 100}ms` }}
                   />
                 ))}
               </div>
             </div>
 
-            {/* Per-skill breakdown */}
             <div className="grid w-full grid-cols-3 gap-3">
               {resultRows.map((row) => (
                 <div
@@ -577,13 +636,12 @@ export function AnnemieMvpApp() {
                     {row.label}
                   </p>
                   <p className="font-display text-2xl font-extrabold text-primary">
-                    {row.correct}/{row.total}
+                    {formatNumber(locale, row.correct)}/{formatNumber(locale, row.total)}
                   </p>
                 </div>
               ))}
             </div>
 
-            {/* Action buttons */}
             <div className="flex w-full flex-col gap-3 sm:flex-row sm:justify-center">
               <button
                 type="button"
@@ -592,7 +650,7 @@ export function AnnemieMvpApp() {
               >
                 <RotateCcw className="h-6 w-6 text-white" strokeWidth={2.5} />
                 <span className="font-display text-xl font-extrabold text-white">
-                  Play again!
+                  {t("result.playAgain")}
                 </span>
               </button>
               <button
@@ -603,7 +661,7 @@ export function AnnemieMvpApp() {
                 }
               >
                 <span className="font-display text-xl font-bold">
-                  Change skill
+                  {t("result.changeSkill")}
                 </span>
               </button>
             </div>
@@ -611,5 +669,13 @@ export function AnnemieMvpApp() {
         )}
       </div>
     </main>
+  );
+}
+
+export function AnnemieMvpApp() {
+  return (
+    <LocaleProvider>
+      <AnnemieMvpAppContent />
+    </LocaleProvider>
   );
 }

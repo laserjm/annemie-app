@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
+import { useLocale } from "@/components/i18n/locale-provider";
 import { NumberChoices } from "@/components/tasks/NumberChoices";
 import { TenFrame } from "@/components/tasks/TenFrame";
 import type { TenFrameFlashTask as TenFrameFlashTaskType } from "@/lib/domain/task";
@@ -16,6 +17,7 @@ export function TenFrameFlashTask({
   onAnswer,
   disabled = false,
 }: TenFrameFlashTaskProps) {
+  const { t } = useLocale();
   const [phase, setPhase] = useState<"countdown" | "visible" | "hidden">(
     "countdown",
   );
@@ -77,14 +79,14 @@ export function TenFrameFlashTask({
   return (
     <div className="flex flex-col items-center gap-6">
       <p className="font-display text-2xl font-bold text-foreground">
-        {task.prompt || "How many dots did you see?"}
+        {task.prompt || t("task.quantity.prompt")}
       </p>
 
       <div className="clay bg-white/60 p-6">
         {phase === "countdown" ? (
           <div className="flex h-44 w-72 flex-col items-center justify-center">
             <p className="font-display text-lg font-semibold text-primary/60">
-              Get ready!
+              {t("task.quantity.getReady")}
             </p>
             <p
               key={countdown}
@@ -101,7 +103,7 @@ export function TenFrameFlashTask({
               <Eye className="h-8 w-8 text-primary/40" />
             </div>
             <p className="font-display text-lg font-semibold text-muted-foreground">
-              Now pick your answer!
+              {t("task.quantity.pickAnswer")}
             </p>
           </div>
         )}
@@ -114,7 +116,7 @@ export function TenFrameFlashTask({
         disabled={!canShowAgain}
       >
         <Eye className="h-5 w-5" />
-        {showAgainUsed ? "Already peeked!" : "Peek again"}
+        {showAgainUsed ? t("task.quantity.peekUsed") : t("task.quantity.peekAgain")}
       </button>
 
       <NumberChoices

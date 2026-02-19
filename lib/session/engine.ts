@@ -5,6 +5,8 @@ import {
   type SkillDifficultyMap,
   type Task,
 } from "@/lib/domain/task"
+import { DEFAULT_LOCALE } from "@/lib/i18n"
+import type { Locale } from "@/lib/i18n/types"
 import {
   createEmptySkillStats,
   type AttemptRecord,
@@ -87,7 +89,7 @@ const updateDifficulty = (input: {
 }
 
 export type SessionEngine = {
-  start(config: { length: 5; seed?: string }): void
+  start(config: { length: 5; seed?: string; locale: Locale }): void
   getCurrentTask(): Task
   submitAnswer(input: { value: number | string; responseMs: number }): {
     isCorrect: boolean
@@ -116,6 +118,7 @@ export const createSessionEngine = (options?: {
   let finishedAt = ""
   let length = 5
   let skillSequence: Skill[] = []
+  let sessionLocale: Locale = DEFAULT_LOCALE
   let currentIndex = 0
   let currentTask: Task | null = null
   let currentHintLevel: 0 | 1 | 2 = 0
@@ -141,6 +144,7 @@ export const createSessionEngine = (options?: {
     return generateTaskForSkill({
       skill,
       difficulty: difficultyBySkill[skill],
+      locale: sessionLocale,
       rng,
       index: currentIndex,
       previousTask,
@@ -154,6 +158,7 @@ export const createSessionEngine = (options?: {
       startedAt = new Date().toISOString()
       finishedAt = ""
       length = config.length
+      sessionLocale = config.locale
       skillSequence = buildSkillSequence({
         length,
         rng,

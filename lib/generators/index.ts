@@ -1,4 +1,5 @@
 import type { Difficulty, Skill, Task } from "@/lib/domain/task"
+import type { Locale } from "@/lib/i18n/types"
 import { getTaskSignature } from "@/lib/domain/task"
 import { generateBackToTenSubtractTask } from "@/lib/generators/back-to-ten-subtract"
 import { generateMissingToTenTask } from "@/lib/generators/missing-to-ten"
@@ -9,6 +10,7 @@ import { generateTenFrameFlashTask } from "@/lib/generators/ten-frame"
 export const generateTaskForSkill = (input: {
   skill: Skill
   difficulty: Difficulty
+  locale: Locale
   rng: Rng
   index: number
   previousTask?: Task
@@ -31,6 +33,7 @@ export const generateTaskForSkill = (input: {
 const generateSingleTask = (input: {
   skill: Skill
   difficulty: Difficulty
+  locale: Locale
   rng: Rng
   index: number
 }): Task => {

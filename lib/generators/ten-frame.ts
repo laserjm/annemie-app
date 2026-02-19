@@ -1,9 +1,12 @@
 import type { Difficulty, TenFrameFlashTask } from "@/lib/domain/task"
+import { t } from "@/lib/i18n"
+import type { Locale } from "@/lib/i18n/types"
 import { buildNumberChoices, pickFlashMs, pickTenFrameCount } from "@/lib/generators/helpers"
 import type { Rng } from "@/lib/generators/rng"
 
 export const generateTenFrameFlashTask = (input: {
   difficulty: Difficulty
+  locale: Locale
   rng: Rng
   index: number
 }): TenFrameFlashTask => {
@@ -14,7 +17,7 @@ export const generateTenFrameFlashTask = (input: {
     type: "tenFrameFlashCount",
     skill: "quantity",
     difficulty: input.difficulty,
-    prompt: "How many dots did you see?",
+    prompt: t(input.locale, "task.quantity.prompt"),
     stimulus: {
       count,
       flashMs: pickFlashMs(input.difficulty),
@@ -28,8 +31,8 @@ export const generateTenFrameFlashTask = (input: {
       correct: count,
     },
     hints: [
-      "Look for groups: first to 5, then count extras.",
-      "Use 5 + extras. For example, 8 is 5 and 3.",
+      t(input.locale, "task.quantity.hint1"),
+      t(input.locale, "task.quantity.hint2"),
     ],
     scoring: {
       maxPoints: 100,

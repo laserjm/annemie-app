@@ -1,9 +1,12 @@
 import type { BackToTenSubtractTask, Difficulty } from "@/lib/domain/task"
+import { t } from "@/lib/i18n"
+import type { Locale } from "@/lib/i18n/types"
 import { buildNumberChoices, pickBridgeSubtractPair } from "@/lib/generators/helpers"
 import type { Rng } from "@/lib/generators/rng"
 
 export const generateBackToTenSubtractTask = (input: {
   difficulty: Difficulty
+  locale: Locale
   rng: Rng
   index: number
 }): BackToTenSubtractTask => {
@@ -16,7 +19,7 @@ export const generateBackToTenSubtractTask = (input: {
     type: "backToTenSubtract",
     skill: "bridgeSubtract",
     difficulty: input.difficulty,
-    prompt: "Subtract by crossing ten.",
+    prompt: t(input.locale, "task.bridgeSubtract.prompt"),
     stimulus: {
       start,
       subtract,
@@ -31,8 +34,12 @@ export const generateBackToTenSubtractTask = (input: {
       correct,
     },
     hints: [
-      "First subtract to 10, then subtract what is left.",
-      `${start} -> 10 removes ${bridgeStep}. Then remove ${subtract - bridgeStep}.`,
+      t(input.locale, "task.bridgeSubtract.hint1"),
+      t(input.locale, "task.bridgeSubtract.hint2", {
+        start,
+        bridgeStep,
+        leftover: subtract - bridgeStep,
+      }),
     ],
     scoring: {
       maxPoints: 100,

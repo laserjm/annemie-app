@@ -1,3 +1,4 @@
+import { useLocale } from "@/components/i18n/locale-provider";
 import { cn } from "@/lib/utils";
 import { Lightbulb } from "lucide-react";
 
@@ -12,6 +13,8 @@ export function HintPanel({
   hintMessage,
   className,
 }: HintPanelProps) {
+  const { t } = useLocale();
+
   if (!hintMessage || hintLevel === 0) {
     return null;
   }
@@ -30,7 +33,7 @@ export function HintPanel({
       />
       <div>
         <p className="font-display text-base font-bold text-amber-800">
-          Hint {hintLevel}
+          {t("session.hint.level", { level: hintLevel })}
         </p>
         <p className="text-base text-foreground/80">{hintMessage}</p>
       </div>

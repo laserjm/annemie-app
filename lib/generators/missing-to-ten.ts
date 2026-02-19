@@ -1,9 +1,12 @@
 import type { Difficulty, MissingToTenTask } from "@/lib/domain/task"
+import { t } from "@/lib/i18n"
+import type { Locale } from "@/lib/i18n/types"
 import { buildNumberChoices, pickMissingToTenStart } from "@/lib/generators/helpers"
 import type { Rng } from "@/lib/generators/rng"
 
 export const generateMissingToTenTask = (input: {
   difficulty: Difficulty
+  locale: Locale
   rng: Rng
   index: number
 }): MissingToTenTask => {
@@ -15,7 +18,7 @@ export const generateMissingToTenTask = (input: {
     type: "missingToTen",
     skill: "makeTen",
     difficulty: input.difficulty,
-    prompt: "What number completes ten?",
+    prompt: t(input.locale, "task.makeTen.prompt"),
     stimulus: {
       start,
       target: 10,
@@ -29,8 +32,8 @@ export const generateMissingToTenTask = (input: {
       correct,
     },
     hints: [
-      "Think of ten as 5 + 5. How far is your number from 10?",
-      `Count up from ${start} to 10 with your fingers.`,
+      t(input.locale, "task.makeTen.hint1"),
+      t(input.locale, "task.makeTen.hint2", { start }),
     ],
     scoring: {
       maxPoints: 100,

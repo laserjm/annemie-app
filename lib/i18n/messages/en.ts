@@ -1,0 +1,58 @@
+export const enMessages = {
+  "app.name": "Annemie",
+  "app.tagline": "Let's do some math!",
+  "locale.label": "Language",
+  "locale.de": "DE",
+  "locale.en": "EN",
+
+  "skill.balanced": "Mix it up!",
+  "skill.quantity": "Count Dots",
+  "skill.makeTen": "Make Ten",
+  "skill.bridgeSubtract": "Subtract",
+
+  "start.practiceQuestion": "What do you want to practise?",
+  "start.lastTime": "Last time",
+  "start.lastScore": "{correct} out of {total} right!",
+  "start.go": "Let's Go!",
+
+  "session.hint.level": "Hint {level}",
+  "session.hint.button.0": "Need a hint?",
+  "session.hint.button.1": "One more hint?",
+  "session.hint.button.2": "No more hints",
+
+  "result.title": "Well done!",
+  "result.playAgain": "Play again!",
+  "result.changeSkill": "Change skill",
+  "result.encouragement.perfect": "Perfect score! You're a math superstar!",
+  "result.encouragement.great": "Amazing! You're getting really good at this!",
+  "result.encouragement.good": "Nice work! Keep practising and you'll be even better!",
+  "result.encouragement.try": "Great try! Every practice makes you stronger!",
+
+  "task.quantity.prompt": "How many dots did you see?",
+  "task.quantity.getReady": "Get ready!",
+  "task.quantity.pickAnswer": "Now pick your answer!",
+  "task.quantity.peekAgain": "Peek again",
+  "task.quantity.peekUsed": "Already peeked!",
+  "task.quantity.hint1": "Look for groups: first to 5, then count extras.",
+  "task.quantity.hint2": "Use 5 + extras. For example, 8 is 5 and 3.",
+
+  "task.makeTen.prompt": "What number completes ten?",
+  "task.makeTen.moreToTen": "How many more to make 10?",
+  "task.makeTen.hint1": "Think of ten as 5 + 5. How far is your number from 10?",
+  "task.makeTen.hint2": "Count up from {start} to 10 with your fingers.",
+
+  "task.bridgeSubtract.prompt": "Subtract by crossing ten.",
+  "task.bridgeSubtract.hint1": "First subtract to 10, then subtract what is left.",
+  "task.bridgeSubtract.hint2": "{start} -> 10 removes {bridgeStep}. Then remove {leftover}.",
+
+  "feedback.correct.1": "Super!",
+  "feedback.correct.2": "Yeah!",
+  "feedback.correct.3": "Wow!",
+  "feedback.correct.4": "Bravo!",
+  "feedback.correct.5": "Great!",
+  "feedback.incorrect.1": "Next time!",
+  "feedback.incorrect.2": "Almost!",
+  "feedback.incorrect.3": "Try again!",
+  "feedback.incorrect.4": "Keep going!",
+  "feedback.answerWas": "It was {answer}",
+} as const

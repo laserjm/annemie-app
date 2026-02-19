@@ -15,7 +15,10 @@ export function SessionProgress({
   className,
 }: SessionProgressProps) {
   return (
-    <div className={cn("flex items-center justify-center gap-3", className)}>
+    <div
+      className={cn("flex items-center justify-center gap-3", className)}
+      aria-label={`Progress ${current} of ${total}`}
+    >
       {Array.from({ length: total }, (_, i) => {
         const isDone = i < completed;
         const isCurrent = i === completed && completed < total;
