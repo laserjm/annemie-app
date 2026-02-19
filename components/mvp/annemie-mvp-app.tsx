@@ -429,9 +429,16 @@ function AnnemieMvpAppContent() {
             </div> */}
 
             <div className="flex flex-col items-center gap-2 pt-1">
-              <div className="flex h-20 w-20 items-center justify-center rounded-full bg-primary clay-sm">
+              {/* <div className="flex h-20 w-20 items-center justify-center rounded-full bg-primary clay-sm">
                 <Zap className="h-10 w-10 text-white" strokeWidth={2.5} />
-              </div>
+              </div> */}
+              <img
+                src="/annemie.png"
+                alt="This is Annemie, a cheerful character with a lightning bolt-shaped hair, wearing a pink shirt and blue overalls. She is the mascot of the app."
+                width={0}
+                height={0}
+                className="flex h-20 w-20"
+              />
               <h1 className="font-display text-5xl font-extrabold text-primary">
                 {t("app.name")}
               </h1>
