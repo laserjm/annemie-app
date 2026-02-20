@@ -22,11 +22,12 @@ flowchart LR
   E --> F["SkillRegistry (lib/skills/registry.ts)"]
   F --> G["Skill generator (lib/generators/*)"]
   G --> H["Task object (lib/domain/task.ts)"]
-  H --> I["TaskRenderer switch (components/tasks/TaskRenderer.tsx)"]
+  H --> I["TaskRenderer via TaskTypeRendererRegistry"]
   I --> J["Task UI component"]
   D --> K["SessionResult (lib/domain/session.ts)"]
-  K --> L["appendSessionResult (lib/persistence/local.ts)"]
-  L --> M["localStorage"]
+  K --> L["ProgressStore interface (lib/persistence/store.ts)"]
+  L --> M["ProgressStoreLocal (lib/persistence/local.ts)"]
+  M --> N["localStorage"]
 ```
 
 ## Stable Contracts To Keep
@@ -75,8 +76,8 @@ classDiagram
 
 1. Skill extension seam: `lib/skills/registry.ts`
 2. Generator seam: `lib/generators/*` and `generateTaskForSkill`
-3. Renderer seam: `components/tasks/TaskRenderer.tsx`
-4. Persistence seam: `lib/persistence/local.ts`
+3. Renderer seam: `components/tasks/task-renderer-registry.tsx`
+4. Persistence seam: `lib/persistence/store.ts` and `lib/persistence/local.ts`
 
 ## Desired Hardening (From Enablement and Roadmap)
 
@@ -100,7 +101,7 @@ flowchart TB
 
 ## Gap Notes (Current vs Target)
 
-1. `TaskRenderer` is currently switch-based, not registry-based.
-2. Skill definitions currently map one skill to one generator; roadmap expects per-skill task-type mix.
-3. Difficulty config currently focuses on speed thresholds; enablement expects richer config (`base`, `range`, `crossingRule`).
-4. Persistence is local-only and function-based; long-term plan expects a `ProgressStore` interface.
+1. Skill definitions currently map one skill to one generator; roadmap expects per-skill task-type mix.
+2. Renderer registry currently maps one task type to one component; plugin loading and discipline-level renderer packs are still future work.
+3. Difficulty config now includes `base`, `range`, and `crossingRule`, but current i18n hints are still authored for base 10.
+4. `ProgressStore` abstraction is in place with local implementation; remote store and sync migration are still pending.

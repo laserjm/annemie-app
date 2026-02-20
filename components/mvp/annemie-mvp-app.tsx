@@ -16,11 +16,7 @@ import {
 import type { Skill, Task } from "@/lib/domain/task";
 import { formatDateTime, formatNumber } from "@/lib/i18n/format";
 import type { MessageKey, MessageParams } from "@/lib/i18n/types";
-import {
-  appendSessionResult,
-  loadProgress,
-  updateLastFocusSkill,
-} from "@/lib/persistence/local";
+import { progressStore } from "@/lib/persistence/local";
 import { createSessionEngine, type SessionEngine } from "@/lib/session/engine";
 import { cn } from "@/lib/utils";
 import { Lightbulb, Play, RotateCcw, Star, Trophy } from "lucide-react";
@@ -261,7 +257,7 @@ function AnnemieMvpAppContent() {
   const taskStartRef = useRef<number>(0);
 
   useEffect(() => {
-    const persisted = loadProgress();
+    const persisted = progressStore.loadProgress();
     dispatch({ type: "hydrated", persisted });
   }, []);
 
@@ -306,7 +302,9 @@ function AnnemieMvpAppContent() {
   ];
 
   const startSession = () => {
-    const nextPersisted = updateLastFocusSkill(state.selectedFocusSkill);
+    const nextPersisted = progressStore.updateLastFocusSkill(
+      state.selectedFocusSkill,
+    );
 
     const engine = createSessionEngine({
       initialDifficultyBySkill: {
@@ -394,7 +392,7 @@ function AnnemieMvpAppContent() {
     }
 
     const result = engineRef.current.finish();
-    const persisted = appendSessionResult(result);
+    const persisted = progressStore.appendSessionResult(result);
 
     window.setTimeout(() => {
       dispatch({ type: "session_completed", result, persisted });

@@ -52,7 +52,7 @@ export type TenFrameFlashStimulus = {
 
 export type MissingToTenStimulus = {
   start: number
-  target: 10
+  target: number
   equation: string
 }
 
@@ -60,6 +60,7 @@ export type BackToTenSubtractStimulus = {
   start: number
   subtract: number
   bridgeStep: number
+  base: number
   equation: string
 }
 

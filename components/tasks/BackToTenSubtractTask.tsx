@@ -17,6 +17,7 @@ export function BackToTenSubtractTask({
   const { t } = useLocale();
   const options =
     task.interaction.mode === "singleChoice" ? task.interaction.options : [];
+  const base = task.stimulus.base;
   const leftover = task.stimulus.subtract - task.stimulus.bridgeStep;
 
   return (
@@ -37,7 +38,7 @@ export function BackToTenSubtractTask({
               1
             </span>
             <p className="font-display text-xl font-bold text-foreground">
-              {task.stimulus.start} − {task.stimulus.bridgeStep} = 10
+              {task.stimulus.start} − {task.stimulus.bridgeStep} = {base}
             </p>
           </div>
 
@@ -49,7 +50,7 @@ export function BackToTenSubtractTask({
               2
             </span>
             <p className="font-display text-xl font-bold text-foreground">
-              10 − {leftover} = ?
+              {base} − {leftover} = ?
             </p>
           </div>
         </div>

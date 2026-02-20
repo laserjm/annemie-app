@@ -3,15 +3,24 @@ import { t } from "@/lib/i18n"
 import type { Locale } from "@/lib/i18n/types"
 import { buildNumberChoices, pickBridgeSubtractPair } from "@/lib/generators/helpers"
 import type { Rng } from "@/lib/generators/rng"
+import type { SkillDifficultyConfig } from "@/lib/skills/registry"
 
 export const generateBackToTenSubtractTask = (input: {
   difficulty: Difficulty
+  difficultyConfig: SkillDifficultyConfig
   locale: Locale
   rng: Rng
   index: number
 }): BackToTenSubtractTask => {
-  const { start, subtract } = pickBridgeSubtractPair(input.rng, input.difficulty)
-  const bridgeStep = start - 10
+  const base = input.difficultyConfig.base
+  const { start, subtract } = pickBridgeSubtractPair({
+    rng: input.rng,
+    startRange: input.difficultyConfig.range,
+    subtractRange: input.difficultyConfig.secondaryRange ?? { min: 2, max: 9 },
+    base,
+    crossingRule: input.difficultyConfig.crossingRule,
+  })
+  const bridgeStep = start - base
   const correct = start - subtract
 
   return {
@@ -24,11 +33,17 @@ export const generateBackToTenSubtractTask = (input: {
       start,
       subtract,
       bridgeStep,
+      base,
       equation: `${start} - ${subtract} = ?`,
     },
     interaction: {
       mode: "singleChoice",
-      options: buildNumberChoices(input.rng, correct, 1, 19),
+      options: buildNumberChoices(
+        input.rng,
+        correct,
+        1,
+        Math.max(19, base * 2 - 1)
+      ),
     },
     answer: {
       correct,

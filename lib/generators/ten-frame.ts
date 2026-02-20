@@ -3,14 +3,16 @@ import { t } from "@/lib/i18n"
 import type { Locale } from "@/lib/i18n/types"
 import { buildNumberChoices, pickFlashMs, pickTenFrameCount } from "@/lib/generators/helpers"
 import type { Rng } from "@/lib/generators/rng"
+import type { SkillDifficultyConfig } from "@/lib/skills/registry"
 
 export const generateTenFrameFlashTask = (input: {
   difficulty: Difficulty
+  difficultyConfig: SkillDifficultyConfig
   locale: Locale
   rng: Rng
   index: number
 }): TenFrameFlashTask => {
-  const count = pickTenFrameCount(input.rng, input.difficulty)
+  const count = pickTenFrameCount(input.rng, input.difficultyConfig.range)
 
   return {
     id: `quantity-${input.index}-${count}`,

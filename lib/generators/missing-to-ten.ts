@@ -3,15 +3,18 @@ import { t } from "@/lib/i18n"
 import type { Locale } from "@/lib/i18n/types"
 import { buildNumberChoices, pickMissingToTenStart } from "@/lib/generators/helpers"
 import type { Rng } from "@/lib/generators/rng"
+import type { SkillDifficultyConfig } from "@/lib/skills/registry"
 
 export const generateMissingToTenTask = (input: {
   difficulty: Difficulty
+  difficultyConfig: SkillDifficultyConfig
   locale: Locale
   rng: Rng
   index: number
 }): MissingToTenTask => {
-  const start = pickMissingToTenStart(input.rng, input.difficulty)
-  const correct = 10 - start
+  const start = pickMissingToTenStart(input.rng, input.difficultyConfig.range)
+  const target = input.difficultyConfig.base
+  const correct = target - start
 
   return {
     id: `maketen-${input.index}-${start}`,
@@ -21,12 +24,12 @@ export const generateMissingToTenTask = (input: {
     prompt: t(input.locale, "task.makeTen.prompt"),
     stimulus: {
       start,
-      target: 10,
-      equation: `${start} + ? = 10`,
+      target,
+      equation: `${start} + ? = ${target}`,
     },
     interaction: {
       mode: "singleChoice",
-      options: buildNumberChoices(input.rng, correct, 1, 9),
+      options: buildNumberChoices(input.rng, correct, 1, Math.max(2, target - 1)),
     },
     answer: {
       correct,

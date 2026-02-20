@@ -38,7 +38,12 @@ const generateSingleTask = (input: {
   index: number
 }): Task => {
   const skillDefinition = getSkillDefinition(input.skill)
-  return skillDefinition.generateTask(input)
+  const difficultyConfig = skillDefinition.getDifficultyConfig(input.difficulty)
+
+  return skillDefinition.generateTask({
+    ...input,
+    difficultyConfig,
+  })
 }
 
 export const buildSkillSequence = (input: {

@@ -5,6 +5,7 @@ import {
   type SessionResult,
 } from "@/lib/domain/session"
 import type { Skill } from "@/lib/domain/task"
+import type { ProgressStore } from "@/lib/persistence/store"
 
 const STORAGE_KEY = "annemie-progress-v1"
 
@@ -124,3 +125,23 @@ export const updateLastFocusSkill = (skill: Skill | null): PersistedProgress => 
   saveProgress(nextProgress)
   return nextProgress
 }
+
+export class ProgressStoreLocal implements ProgressStore {
+  loadProgress(): PersistedProgress {
+    return loadProgress()
+  }
+
+  saveProgress(progress: PersistedProgress): void {
+    saveProgress(progress)
+  }
+
+  appendSessionResult(result: SessionResult): PersistedProgress {
+    return appendSessionResult(result)
+  }
+
+  updateLastFocusSkill(skill: Skill | null): PersistedProgress {
+    return updateLastFocusSkill(skill)
+  }
+}
+
+export const progressStore: ProgressStore = new ProgressStoreLocal()

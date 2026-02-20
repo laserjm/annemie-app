@@ -19,20 +19,20 @@ flowchart LR
     A["SessionEngine"]
     B["SkillRegistry and generators"]
     C["TaskRenderer and UI"]
-    D["ProgressStoreLocal localStorage"]
+    D["ProgressStore interface"]
+    E["ProgressStoreLocal localStorage"]
   end
 
   subgraph P2["Phase 2 Cloud MVP"]
-    E["ProgressStore interface"]
     F["ProgressStoreLocal"]
     G["ProgressStoreRemote Supabase"]
     H["Dual write and sync queue"]
   end
 
-  A --> E
+  A --> D
   D --> E
-  E --> F
-  E --> G
+  D --> F
+  D --> G
   G --> H
 ```
 
