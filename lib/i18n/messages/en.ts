@@ -11,6 +11,10 @@ export const enMessages = {
   "skill.bridgeSubtract": "Subtract",
 
   "start.practiceQuestion": "What do you want to practise?",
+  "start.lengthQuestion": "How long should this session be?",
+  "start.length.short": "Short (5)",
+  "start.length.medium": "Medium (10)",
+  "start.length.long": "Long (15)",
   "start.lastTime": "Last time",
   "start.lastScore": "{correct} out of {total} right!",
   "start.go": "Let's Go!",

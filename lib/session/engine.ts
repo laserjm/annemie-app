@@ -1,6 +1,5 @@
 import {
   clampDifficulty,
-  type Difficulty,
   type Skill,
   type SkillDifficultyMap,
   type Task,
@@ -16,16 +15,10 @@ import {
   buildSessionSeed,
   buildSkillSequence,
   generateTaskForSkill,
+  type SessionMode,
 } from "@/lib/generators"
 import { createSeededRng, type Rng } from "@/lib/generators/rng"
-
-const SPEED_THRESHOLDS: Record<Difficulty, number> = {
-  1: 4500,
-  2: 4200,
-  3: 3800,
-  4: 3400,
-  5: 3000,
-}
+import { getSkillDefinition } from "@/lib/skills/registry"
 
 type StreakState = {
   fastCorrect: number
@@ -63,7 +56,9 @@ const updateDifficulty = (input: {
 }): void => {
   const streak = input.streakBySkill[input.skill]
   const currentDifficulty = input.difficultyBySkill[input.skill]
-  const wasFastEnough = input.responseMs <= SPEED_THRESHOLDS[currentDifficulty]
+  const difficultyConfig =
+    getSkillDefinition(input.skill).getDifficultyConfig(currentDifficulty)
+  const wasFastEnough = input.responseMs <= difficultyConfig.speedThresholdMs
   const canIncrease = input.isCorrect && wasFastEnough && input.hintLevelUsed === 0
 
   if (input.isCorrect) {
@@ -89,7 +84,12 @@ const updateDifficulty = (input: {
 }
 
 export type SessionEngine = {
-  start(config: { length: 5; seed?: string; locale: Locale }): void
+  start(config: {
+    mode?: SessionMode
+    length: number
+    seed?: string
+    locale: Locale
+  }): void
   getCurrentTask(): Task
   submitAnswer(input: { value: number | string; responseMs: number }): {
     isCorrect: boolean
@@ -103,7 +103,6 @@ export type SessionEngine = {
 
 export const createSessionEngine = (options?: {
   initialDifficultyBySkill?: Partial<SkillDifficultyMap>
-  focusSkill?: Skill | null
 }): SessionEngine => {
   const difficultyBySkill: SkillDifficultyMap = {
     ...createDefaultDifficultyMap(),
@@ -157,12 +156,13 @@ export const createSessionEngine = (options?: {
       rng = createSeededRng(sessionId)
       startedAt = new Date().toISOString()
       finishedAt = ""
-      length = config.length
+      const nextLength = Math.round(config.length)
+      length = Number.isFinite(nextLength) ? Math.max(1, nextLength) : 5
       sessionLocale = config.locale
       skillSequence = buildSkillSequence({
         length,
         rng,
-        focusSkill: options?.focusSkill,
+        mode: config.mode ?? "mixed",
       })
       currentIndex = 0
       currentHintLevel = 0

@@ -1,11 +1,11 @@
 import type { Difficulty, Skill, Task } from "@/lib/domain/task"
 import type { Locale } from "@/lib/i18n/types"
 import { getTaskSignature } from "@/lib/domain/task"
-import { generateBackToTenSubtractTask } from "@/lib/generators/back-to-ten-subtract"
-import { generateMissingToTenTask } from "@/lib/generators/missing-to-ten"
 import type { Rng } from "@/lib/generators/rng"
 import { pickWeighted, randomInt, shuffle } from "@/lib/generators/rng"
-import { generateTenFrameFlashTask } from "@/lib/generators/ten-frame"
+import { getSkillDefinition, listSkills } from "@/lib/skills/registry"
+
+export type SessionMode = "mixed" | Skill
 
 export const generateTaskForSkill = (input: {
   skill: Skill
@@ -37,58 +37,35 @@ const generateSingleTask = (input: {
   rng: Rng
   index: number
 }): Task => {
-  switch (input.skill) {
-    case "quantity":
-      return generateTenFrameFlashTask(input)
-    case "makeTen":
-      return generateMissingToTenTask(input)
-    case "bridgeSubtract":
-      return generateBackToTenSubtractTask(input)
-    default:
-      throw new Error(`Unsupported skill: ${String(input.skill)}`)
-  }
+  const skillDefinition = getSkillDefinition(input.skill)
+  return skillDefinition.generateTask(input)
 }
 
 export const buildSkillSequence = (input: {
   length: number
   rng: Rng
-  focusSkill?: Skill | null
+  mode: SessionMode
 }): Skill[] => {
-  const base: Skill[] = ["quantity", "makeTen", "bridgeSubtract"]
-
-  const extraCount = Math.max(0, input.length - base.length)
-  const extras: Skill[] = []
-
-  for (let index = 0; index < extraCount; index += 1) {
-    const skill = pickWeighted(input.rng, getSkillWeights(input.focusSkill))
-    extras.push(skill)
+  if (input.length <= 0) {
+    return []
   }
+
+  if (input.mode !== "mixed") {
+    const selectedSkill: Skill = input.mode
+    return Array.from({ length: input.length }, () => selectedSkill)
+  }
+
+  const availableSkills = listSkills()
+  const base: Skill[] = [...availableSkills]
+  const extraCount = Math.max(0, input.length - availableSkills.length)
+  const extras = Array.from({ length: extraCount }, () =>
+    pickWeighted(
+      input.rng,
+      availableSkills.map((skill) => ({ value: skill, weight: 1 }))
+    )
+  )
 
   return shuffle(input.rng, [...base, ...extras]).slice(0, input.length)
-}
-
-const getSkillWeights = (
-  focusSkill?: Skill | null
-): Array<{ value: Skill; weight: number }> => {
-  if (!focusSkill) {
-    return [
-      { value: "quantity", weight: 1 },
-      { value: "makeTen", weight: 1 },
-      { value: "bridgeSubtract", weight: 1 },
-    ]
-  }
-
-  return [
-    { value: focusSkill, weight: 3 },
-    { value: focusSkill === "quantity" ? "makeTen" : "quantity", weight: 1 },
-    {
-      value:
-        focusSkill === "bridgeSubtract"
-          ? "makeTen"
-          : "bridgeSubtract",
-      weight: 1,
-    },
-  ]
 }
 
 export const buildSessionSeed = (): string => {

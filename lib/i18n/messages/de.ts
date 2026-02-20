@@ -13,6 +13,10 @@ export const deMessages: MessageCatalog = {
   "skill.bridgeSubtract": "Subtrahieren",
 
   "start.practiceQuestion": "Was willst du heute üben?",
+  "start.lengthQuestion": "Wie lang soll die Runde sein?",
+  "start.length.short": "Kurz (5)",
+  "start.length.medium": "Mittel (10)",
+  "start.length.long": "Lang (15)",
   "start.lastTime": "Letztes Mal",
   "start.lastScore": "{correct} von {total} richtig!",
   "start.go": "Los geht's!",

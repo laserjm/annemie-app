@@ -23,7 +23,7 @@ import {
 } from "@/lib/persistence/local";
 import { createSessionEngine, type SessionEngine } from "@/lib/session/engine";
 import { cn } from "@/lib/utils";
-import { Lightbulb, Play, RotateCcw, Star, Trophy, Zap } from "lucide-react";
+import { Lightbulb, Play, RotateCcw, Star, Trophy } from "lucide-react";
 
 type Screen = "start" | "session" | "result";
 
@@ -37,11 +37,14 @@ type HintState = {
   message: string | null;
 };
 
+type SessionLength = 5 | 10 | 15;
+
 type AppState = {
   hydrated: boolean;
   phase: Screen;
   persisted: PersistedProgress;
   selectedFocusSkill: Skill | null;
+  selectedLength: SessionLength;
   currentTask: Task | null;
   sessionProgress: { current: number; completed: number; total: number };
   hint: HintState;
@@ -52,6 +55,7 @@ type AppState = {
 type AppAction =
   | { type: "hydrated"; persisted: PersistedProgress }
   | { type: "set_focus"; skill: Skill | null }
+  | { type: "set_length"; length: SessionLength }
   | {
       type: "session_started";
       currentTask: Task;
@@ -77,6 +81,7 @@ const initialState: AppState = {
   phase: "start",
   persisted: createEmptyProgress(),
   selectedFocusSkill: null,
+  selectedLength: 10,
   currentTask: null,
   sessionProgress: {
     current: 1,
@@ -104,6 +109,11 @@ const appReducer = (state: AppState, action: AppAction): AppState => {
       return {
         ...state,
         selectedFocusSkill: action.skill,
+      };
+    case "set_length":
+      return {
+        ...state,
+        selectedLength: action.length,
       };
     case "session_started":
       return {
@@ -172,6 +182,13 @@ const SKILL_COLORS: Record<Skill | "balanced", string> = {
   makeTen: "bg-game-coral text-white",
   bridgeSubtract: "bg-game-lavender text-white",
 };
+
+const SESSION_LENGTH_OPTIONS: Array<{ value: SessionLength; labelKey: MessageKey }> =
+  [
+    { value: 5, labelKey: "start.length.short" },
+    { value: 10, labelKey: "start.length.medium" },
+    { value: 15, labelKey: "start.length.long" },
+  ];
 
 const percentage = (numerator: number, denominator: number): number => {
   if (denominator === 0) {
@@ -297,10 +314,13 @@ function AnnemieMvpAppContent() {
         makeTen: nextPersisted.skillSnapshot.makeTen.difficulty,
         bridgeSubtract: nextPersisted.skillSnapshot.bridgeSubtract.difficulty,
       },
-      focusSkill: state.selectedFocusSkill,
     });
 
-    engine.start({ length: 5, locale });
+    engine.start({
+      mode: state.selectedFocusSkill ?? "mixed",
+      length: state.selectedLength,
+      locale,
+    });
 
     engineRef.current = engine;
 
@@ -475,6 +495,35 @@ function AnnemieMvpAppContent() {
                       <span className="font-display text-lg font-bold">
                         {t(option.labelKey)}
                       </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="w-full space-y-3">
+              <p className="text-center font-display text-lg font-bold text-foreground/70">
+                {t("start.lengthQuestion")}
+              </p>
+              <div className="grid grid-cols-3 gap-3">
+                {SESSION_LENGTH_OPTIONS.map((option) => {
+                  const selected = state.selectedLength === option.value;
+
+                  return (
+                    <button
+                      key={option.value}
+                      type="button"
+                      className={cn(
+                        "clay-button min-h-16 px-3 py-3 font-display text-lg font-bold transition-all",
+                        selected
+                          ? "bg-game-success text-white ring-4 ring-white/60 scale-105"
+                          : "bg-white text-foreground hover:scale-[1.02]",
+                      )}
+                      onClick={() =>
+                        dispatch({ type: "set_length", length: option.value })
+                      }
+                    >
+                      {t(option.labelKey)}
                     </button>
                   );
                 })}
